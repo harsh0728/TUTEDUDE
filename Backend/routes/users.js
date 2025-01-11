@@ -30,39 +30,17 @@ router.get("/search", verifyToken, async (req, res) => {
   }
 });
 
-// Send friend requests
-// router.post("/send-friend-request", verifyToken, async (req, res) => {
-//   const { username } = req.body; // username of the user to send a request to
-//   const currentUser = await User.findById(req.user.id);
+// Get My friend Lists
+router.get("/myFriends", verifyToken, async (req, res) => {
+  const currentUser = await User.findById(req.user.id);
 
-//   const friend = await User.findOne({ username }); // Find user by username
+  const friends = await User.find(
+    { _id: { $in: currentUser.friends } },
+    { username: 1, _id: 0 } // Include only the username field, exclude the _id field
+  );
 
-//   // Check if the user is trying to add themselves
-//   if (friend._id.toString() === currentUser._id.toString()) {
-//     return res
-//       .status(400)
-//       .json({ error: "You can't send a friend request to yourself" });
-//   }
-
-//   // Check if the user is already in the sent requests
-//   if (currentUser.sentRequests.includes(username)) {
-//     return res.status(400).json({ error: "Friend request already sent" });
-//   }
-
-//   // Check if the user is already a friend
-//   if (currentUser.friends.includes(username)) {
-//     return res.status(400).json({ error: "Already friends" });
-//   }
-
-//   // Add the request to both users
-//   currentUser.sentRequests.push(friend._id);
-//   await currentUser.save();
-
-//   friend.receivedRequests.push(req.user.id);
-//   await friend.save();
-
-//   res.json({ message: "Friend request sent successfully" });
-// });
+  res.json(friends);
+});
 
 router.post("/send-friend-request", verifyToken, async (req, res) => {
   const { username } = req.body; // Username of the user to send a request to
@@ -72,6 +50,8 @@ router.post("/send-friend-request", verifyToken, async (req, res) => {
   if (!friend) {
     return res.status(404).json({ error: "User not found" });
   }
+  console.log("currentUser", currentUser._id.toString());
+  console.log("friend", friend._id.toString());
 
   if (friend._id.toString() === currentUser._id.toString()) {
     return res
@@ -194,12 +174,25 @@ router.post("/respond-friend-request", verifyToken, async (req, res) => {
 
 // Friend recommendations based on mutual friends
 router.get("/recommendations", verifyToken, async (req, res) => {
-  const currentUser = await User.findById(req.user.id).populate("friends");
+  // Fetch the current user with friends populated and password excluded
+  const currentUser = await User.findById(req.user.id)
+    .select("-password")
+    .populate({
+      path: "friends",
+      select: "-password",
+    });
 
+  console.log("currentUser for recommendation", currentUser);
+
+  // Fetch all users excluding the current user, and populate their friends without passwords
   const recommendedUsers = await User.find({
     _id: { $ne: req.user.id },
-  }).populate("friends");
+  }).populate({
+    path: "friends",
+    select: "-password",
+  });
 
+  // Filter users based on mutual friends
   const recommendations = recommendedUsers.filter((user) => {
     const mutualFriends = user.friends.filter((friend) =>
       currentUser.friends.some(
@@ -210,7 +203,9 @@ router.get("/recommendations", verifyToken, async (req, res) => {
     return mutualFriends.length > 0;
   });
 
-  res.json(recommendations);
+  res.json({ Recommendations: recommendations });
 });
+
+module.exports = router;
 
 module.exports = router;

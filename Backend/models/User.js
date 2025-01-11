@@ -9,5 +9,13 @@ const UserSchema = new mongoose.Schema({
   receivedRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
+// Exclude the password field when converting the document to JSON
+// UserSchema.set("toJSON", {
+//   transform: (doc, ret) => {
+//     delete ret.password;
+//     return ret;
+//   },
+// });
+
 const User = mongoose.model("User", UserSchema);
 module.exports = User;
