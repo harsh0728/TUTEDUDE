@@ -10,7 +10,10 @@ const Signup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:4000/api/auth/register/", { username, password });
+      await axios.post(
+        "https://tutedude-bzdi.onrender.com/api/auth/register/",
+        { username, password }
+      );
       alert("Signup successful! Please login.");
       navigate("/");
     } catch (error) {

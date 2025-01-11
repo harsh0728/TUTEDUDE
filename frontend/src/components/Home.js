@@ -13,16 +13,19 @@ const Home = () => {
 
   const fetchUsers = async () => {
     const token = localStorage.getItem("token");
-    const response = await axios.get("http://localhost:4000/api/users/search", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get(
+      "https://tutedude-bzdi.onrender.com/api/users/search",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     setUsers(response.data);
   };
 
   const fetchFriends = async () => {
     const token = localStorage.getItem("token");
     const response = await axios.get(
-      "http://localhost:4000/api/users/myFriends",
+      "https://tutedude-bzdi.onrender.com/api/users/myFriends",
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -33,7 +36,7 @@ const Home = () => {
   const handleSendFriendRequest = async (username) => {
     const token = localStorage.getItem("token");
     await axios.post(
-      "http://localhost:4000/api/users/send-friend-request",
+      "https://tutedude-bzdi.onrender.com/api/users/send-friend-request",
       { username },
       { headers: { Authorization: `Bearer ${token}` } }
     );
